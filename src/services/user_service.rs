@@ -1,26 +1,30 @@
-use self::models::*;
+use crate::models::*;
 use diesel::prelude::*;
-use diesel_demo::*;
 use webhook_poc::establish_connection;
 
-fn main() {
-    add_user();
-}
-
-fn add_user() {
-    use self::schema::users::dsl::*;
+pub fn get_user(id: i32) -> Result<User, diesel::result::Error> {
+    use crate::schema::users::dsl::*;
 
     let connection = &mut establish_connection();
-    let results = users
-        .limit(5)
-        .select(Users::as_select())
-        .load(connection)
-        .expect("Error loading posts");
+    let result = users
+        .filter(id.eq(id))
+        .limit(1)
+        .select(User::as_select())
+        .load::<User>(connection)?
+        .first()
+        .ok_or(diesel::result::Error::NotFound)?
+        .clone();
 
-    println!("Displaying {} posts", results.len());
-    for post in results {
-        println!("{}", post.title);
-        println!("-----------\n");
-        println!("{}", post.body);
-    }
+    Ok(result)
+}
+
+pub fn add_user(user: User) -> Result<User, diesel::result::Error> {
+    use crate::schema::users::dsl::*;
+
+    let connection = &mut establish_connection();
+    let result = diesel::insert_into(users)
+        .values(user)
+        .get_result::<User>(connection)?;
+
+    Ok(result)
 }
