@@ -11,6 +11,8 @@ use serde::Deserialize;
 use std::collections::HashSet;
 use std::sync::Mutex;
 
+mod models;
+
 struct Subscribers {
     clients: Mutex<HashSet<String>>,
 }
